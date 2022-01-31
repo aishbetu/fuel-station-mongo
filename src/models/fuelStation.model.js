@@ -18,7 +18,6 @@ const StationsSchema = new Schema({
         type: Number
     }
 
-
 });
 
 const Stations = mongoose.model('Stations', StationsSchema);

@@ -44,7 +44,7 @@ exports.createStation = async (req, res) => {
     }
 
     // validating x co-ordinate
-    if ((req.body.x_coordinate < -180) || (req.body.x_coordinate > 180)){
+    if ((req.body.x_coordinate < -180) || (req.body.x_coordinate > 180)) {
         return res.status(400).send({success: false, message: 'X co-ordinate is not valid'});
     }
     // validating y co-ordinate

@@ -7,8 +7,18 @@ exports.getStationsList = async (req, res) => {
 
     try {
         const stations = await Stations.find({});
-        console.log(stations);
-        res.status(200).send(stations);
+        let stationsObject = [];
+        stationsObject = stations.map(i => {
+            const newObj = {
+                station_name : i.station_name,
+                x_coordinate : i.location.coordinates[0],
+                y_coordinate : i.location.coordinates[1],
+                fuel_price : i.fuel_price,
+            }
+            return newObj;
+        })
+        console.log(stationsObject);
+        res.status(200).send(stationsObject);
     }catch (err) {
         console.log(err);
         res.status(400).send(err);
@@ -26,7 +36,7 @@ exports.createStation = async (req, res) => {
     // creating an object with trimmed co-ordinates along with original body of name & price
     const stationObj = {
         station_name: req.body.station_name,
-        location: [newLong, newLat],
+        location: {coordinates: [newLong, newLat]},
         fuel_price: req.body.fuel_price
     };
 
@@ -130,12 +140,12 @@ exports.deleteStation = async (req, res) => {
 
 // TO DO
 // handling get route to fetch top 3 nearby stations from user location
-exports.getNearestStations = (req, res) => {
+exports.getNearestStations = async (req, res) => {
     if (!req.params.long || !req.params.lat) {
         return res.status(400).send({message: 'Please provide latitude and longitude both'});
     }
     // validating x co-ordinate
-    if ((req.params.long < -180) || (req.params.long > 180)){
+    if ((req.params.long < -180) || (req.params.long > 180)) {
         return res.status(400).send({success: false, message: 'X co-ordinate is not valid'});
     }
     // validating y co-ordinate
@@ -148,18 +158,40 @@ exports.getNearestStations = (req, res) => {
     // split str cords to = then parse 1st index to float
     const xCordinateNumber = parseFloat(x_cordinate.split("=").pop());
     const yCordinateNumber = parseFloat(y_cordinate.split("=").pop());
-
+    // console.log(yCordinateNumber);
     // pass these cordinates to model method to get results
-    StationModel.findNearbyStations(xCordinateNumber, yCordinateNumber, (err, stations) => {
-        if (err) {
-            return res.status(500).send(err);
-        }
-        // trimming the distance from stations object of data upto 2 decimal point
-        let trimmedDistanceStaions = stations.map((i) => {
-            i.distance = parseFloat(i.distance.toFixed(2))
-            return i;
-        })
-        console.log(trimmedDistanceStaions);
-        res.status(200).send({success: true, message: 'Station has been deleted successfully', data: trimmedDistanceStaions});
-    })
+    try {
+        const data = await Stations.find({
+            location: {
+                $near: {
+                    $maxDistance: 5000,
+                    $geometry: {
+                        type: "Point",
+                        coordinates: [xCordinateNumber, yCordinateNumber]
+                    },
+                },
+            },
+        });
+        console.log(data);
+        return res.status(200).send({success: true, message: 'Station has been fetched successfully', data: data});
+
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send({message: 'Unknown error', error: err})
+    }
+
+
+    // StationModel.findNearbyStations(xCordinateNumber, yCordinateNumber, (err, stations) => {
+    //     if (err) {
+    //         return res.status(500).send(err);
+    //     }
+    //     // trimming the distance from stations object of data upto 2 decimal point
+    //     let trimmedDistanceStaions = stations.map((i) => {
+    //         i.distance = parseFloat(i.distance.toFixed(2))
+    //         return i;
+    //     })
+    //     console.log(trimmedDistanceStaions);
+    //     res.status(200).send({success: true, message: 'Station has been deleted successfully', data: trimmedDistanceStaions});
+    // })
 }
+

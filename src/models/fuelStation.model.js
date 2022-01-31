@@ -11,14 +11,23 @@ const StationsSchema = new Schema({
         dropDups: true
     },
     location: {
-        type: [Number], // [<Long>, <Lat>]
-        index: '2d'
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point',
+        },
+        coordinates: {
+            type: [Number], // [<Long>, <Lat>]
+            default: [0,0],
+        }
     },
     fuel_price: {
         type: Number
     }
 
 });
+
+StationsSchema.index({location: "2dsphere"});
 
 const Stations = mongoose.model('Stations', StationsSchema);
 

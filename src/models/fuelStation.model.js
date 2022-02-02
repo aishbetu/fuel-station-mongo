@@ -32,10 +32,3 @@ StationsSchema.index({location: "2dsphere"});
 const Stations = mongoose.model('Stations', StationsSchema);
 
 module.exports = Stations;
-
-// x_coordinate: {
-//     type: Number
-// },
-// y_coordinate: {
-//     type: Number
-// },

@@ -10,6 +10,7 @@ exports.getStationsList = async (req, res) => {
         let stationsObject = [];
         stationsObject = stations.map(i => {
             const newObj = {
+                id: i._id,
                 station_name : i.station_name,
                 x_coordinate : i.location.coordinates[0],
                 y_coordinate : i.location.coordinates[1],
@@ -138,7 +139,6 @@ exports.deleteStation = async (req, res) => {
 }
 
 
-// TO DO
 // handling get route to fetch top 3 nearby stations from user location
 exports.getNearestStations = async (req, res) => {
     if (!req.params.long || !req.params.lat) {
@@ -158,40 +158,42 @@ exports.getNearestStations = async (req, res) => {
     // split str cords to = then parse 1st index to float
     const xCordinateNumber = parseFloat(x_cordinate.split("=").pop());
     const yCordinateNumber = parseFloat(y_cordinate.split("=").pop());
-    // console.log(yCordinateNumber);
-    // pass these cordinates to model method to get results
     try {
-        const data = await Stations.find({
-            location: {
-                $near: {
-                    $maxDistance: 5000,
-                    $geometry: {
-                        type: "Point",
-                        coordinates: [xCordinateNumber, yCordinateNumber]
+
+        const nearestStaions = await Stations.aggregate([
+            {
+                '$geoNear': {
+                    'near': {
+                        'type': 'Point',
+                        'coordinates': [ xCordinateNumber , yCordinateNumber ],
                     },
-                },
+                    'spherical': true,
+                    'distanceField': 'dist',
+                    'distanceMultiplier': 0.001, // to convert meters into km
+                }
             },
-        });
-        console.log(data);
-        return res.status(200).send({success: true, message: 'Station has been fetched successfully', data: data});
+            {
+                '$sort': {
+                    'dist': 1 // ascending order
+                }
+            },
+            {
+                $limit: 3 // top 3 results
+            }
+        ]);
+        let trimmedDistanceStaions = nearestStaions.map((i) => {
+                    i.dist = parseFloat(i.dist.toFixed(2))
+                    return i;
+                });
+
+        console.log(trimmedDistanceStaions);
+        // console.log(data);
+        return res.status(200).send({success: true, message: 'Station has been fetched successfully', data: trimmedDistanceStaions});
 
     } catch (err) {
         console.log(err);
         return res.status(400).send({message: 'Unknown error', error: err})
     }
-
-
-    // StationModel.findNearbyStations(xCordinateNumber, yCordinateNumber, (err, stations) => {
-    //     if (err) {
-    //         return res.status(500).send(err);
-    //     }
-    //     // trimming the distance from stations object of data upto 2 decimal point
-    //     let trimmedDistanceStaions = stations.map((i) => {
-    //         i.distance = parseFloat(i.distance.toFixed(2))
-    //         return i;
-    //     })
-    //     console.log(trimmedDistanceStaions);
-    //     res.status(200).send({success: true, message: 'Station has been deleted successfully', data: trimmedDistanceStaions});
-    // })
 }
+
 

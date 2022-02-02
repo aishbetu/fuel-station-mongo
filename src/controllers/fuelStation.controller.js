@@ -168,21 +168,24 @@ exports.getNearestStations = async (req, res) => {
                         'coordinates': [ xCordinateNumber , yCordinateNumber ],
                     },
                     'spherical': true,
-                    'distanceField': 'dist',
+                    'distanceField': 'distance',
                     'distanceMultiplier': 0.001, // to convert meters into km
                 }
             },
             {
                 '$sort': {
-                    'dist': 1 // ascending order
+                    'distance': 1 // ascending order
                 }
             },
             {
                 $limit: 3 // top 3 results
             }
         ]);
+
+
+        // trim the distance then return data
         let trimmedDistanceStaions = nearestStaions.map((i) => {
-                    i.dist = parseFloat(i.dist.toFixed(2))
+                    i.distance = parseFloat(i.distance.toFixed(2))
                     return i;
                 });
 
@@ -192,7 +195,7 @@ exports.getNearestStations = async (req, res) => {
 
     } catch (err) {
         console.log(err);
-        return res.status(400).send({message: 'Unknown error', error: err})
+        return res.status(400).send({message: 'Error Occurred', error: err})
     }
 }
 

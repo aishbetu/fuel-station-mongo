@@ -27,9 +27,9 @@ npm i
 
 ## Steps to run this project
 
-- Import dump mysql file from "Exported MySQL DB" folder to your workbench.
-- Check Wheather the database scehma is created in your workbench.
-- Configure your mysql user and password along with db name in folder config/db.config.js
+- Add ``` "fuel_stations" ``` database in mongodb.
+- Run your mongodb server using command ```"mongod"```
+- Check if the mongo server is running by connecting compass to localhost 27017.
 - Run command ``` "npm start"```
 - Visit http://localhost:5000/api/v1/stations from your browser or postman.
 

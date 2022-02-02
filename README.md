@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
-Fuel Station app is built with Node, Express, MySQL techstack ,
+Fuel Station app is built with Node, Express, MongoDB techstack ,
 ## The functionalities of this app are:
 
 - Add new Fuel Sttaions
